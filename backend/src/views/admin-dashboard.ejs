@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; color: #0f172a; }
+    h1 { font-size: 20px; margin: 0 0 16px; }
+    .wrap { width: 100%; max-width: none; margin: 0; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; background: #fff; }
+    .muted { color: #64748b; font-size: 12px; }
+    nav { margin-bottom: 16px; }
+    nav a { margin-right: 12px; color: #0ea5e9; text-decoration: none; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-size: 12px; letter-spacing: .02em; color: #475569; }
+    .status { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+    .dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; }
+    .on { background: #16a34a; }
+    .off { background: #ef4444; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    label { font-size: 12px; color: #475569; display: block; margin-bottom: 6px; }
+    input[type="number"], input[type="text"] { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; }
+    .row { display: flex; align-items: center; gap: 12px; }
+    button { border: 0; border-radius: 6px; padding: 8px 12px; font-weight: 600; cursor: pointer; }
+    .enable { background: #16a34a; color: white; }
+    .disable { background: #ef4444; color: white; }
+    .primary { background: #2563eb; color: white; }
+    .layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: start; }
+    /* Sidebar (PHP style) */
+    .sidebar { width: 100%; background: #2c3e50; color: #fff; padding: 2rem 0; border-radius: 10px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header h2 { margin: 0 0 0.5rem 0; color: #fff; }
+    .sidebar-nav { padding: 1rem 0; }
+    .nav-link { display: flex; align-items: center; padding: 0.8rem 1.5rem; color: #ecf0f1; text-decoration: none; transition: all .3s ease; border-left: 4px solid transparent; border-radius: 0 8px 8px 0; }
+    .nav-link i { margin-right: 10px; width: 20px; text-align: center; }
+    .nav-link:hover, .nav-link.active { background: #34495e; border-left-color: #3498db; color: #fff; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .menu-btn { display: none; border: 1px solid #e2e8f0; background: #fff; color: #0f172a; padding: 8px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .backdrop { display: none; }
+    .no-scroll { overflow: hidden; }
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .menu-btn { display: inline-flex; align-items: center; gap: 8px; }
+      .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 280px; max-width: 85vw; transform: translateX(-100%); transition: transform .25s ease; z-index: 50; border-radius: 0; }
+      .sidebar.open { transform: translateX(0); }
+      .backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 40; opacity: 0; pointer-events: none; display: block; transition: opacity .2s ease; }
+      .backdrop.show { opacity: 1; pointer-events: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <button class="menu-btn" aria-label="Open menu" data-menu-btn>☰ Menu</button>
+      <div></div>
+    </div>
+    <div class="layout">
+      <aside class="sidebar" role="navigation" aria-label="Sidebar">
+        <div class="sidebar-header">
+          <h2>Dashboard</h2>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="/admin" class="nav-link <%= page === 'dashboard' ? 'active' : '' %>"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+          <a href="/admin/middleware" class="nav-link <%= page === 'middleware' ? 'active' : '' %>"><i class="fas fa-tools"></i> Middleware</a>
+          <a href="/admin/pricing" class="nav-link <%= page === 'pricing' ? 'active' : '' %>"><i class="fas fa-coins"></i> Pricing</a>
+          <a href="/admin/users" class="nav-link <%= page === 'users' ? 'active' : '' %>"><i class="fas fa-users-cog"></i> Users</a>
+          <a href="/admin/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+      </aside>
+      <main class="content">
+        <h1>Admin Dashboard</h1>
+
+        <div class="cards">
+      <div class="card">
+        <div class="muted">Middleware</div>
+        <div style="font-size: 28px; font-weight: 800;">On: <%= onCount %></div>
+        <div>Off: <%= offCount %></div>
+      </div>
+      <div class="card">
+        <div class="muted">Pricing</div>
+        <div>Apply: <strong><%= pricing.apply ? 'Yes' : 'No' %></strong></div>
+        <div>Discount (%): <strong><%= pricing.discount %></strong></div>
+        <div>Markup (%): <strong><%= pricing.markup %></strong></div>
+        <div>Charges (amount): <strong><%= pricing.charges %></strong></div>
+      </div>
+      <div class="card">
+        <div class="muted">Shortcuts</div>
+        <div><a class="text-primary-600 hover:text-primary-700 font-medium" href="/admin/pricing">Edit pricing</a></div>
+        <div><a class="text-primary-600 hover:text-primary-700 font-medium" href="/admin/middleware">Toggle middleware</a></div>
+      </div>
+        </div>
+
+        <div class="grid">
+      <div class="card">
+        <div style="font-weight: 700; margin-bottom: 8px;">Pricing control</div>
+        <form method="post" action="/admin/pricing/update">
+          <div class="grid">
+            <div>
+              <label for="discount">Discount (%)</label>
+              <input id="discount" name="discount" type="number" step="0.01" value="<%= pricing.discount %>" />
+            </div>
+            <div>
+              <label for="markup">Markup (%)</label>
+              <input id="markup" name="markup" type="number" step="0.01" value="<%= pricing.markup %>" />
+            </div>
+            <div>
+              <label for="charges">Charges (amount)</label>
+              <input id="charges" name="charges" type="number" step="0.01" value="<%= pricing.charges %>" />
+            </div>
+            <div class="row" style="margin-top: 22px;">
+              <label class="row"><input type="checkbox" name="apply" <%= pricing.apply ? 'checked' : '' %> /> Apply adjustments</label>
+            </div>
+          </div>
+          <div style="margin-top: 16px;" class="row">
+            <button type="submit" class="primary">Save pricing</button>
+            <span class="muted">Fallback (GET): /admin/pricing/update?commission=..&fixed=..&roundToNearest=..&apply=on</span>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div style="font-weight: 700; margin-bottom: 8px;">Middleware control</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (middlewares || []).forEach(function(mw){ %>
+              <tr>
+                <td><%= mw.name %></td>
+                <td>
+                  <span class="status">
+                    <span class="dot <%= mw.enabled ? 'on' : 'off' %>"></span>
+                    <%= mw.enabled ? 'Enabled' : 'Disabled' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="row">
+                    <form method="get" action="/admin/middleware/toggle">
+                      <input type="hidden" name="name" value="<%= mw.name %>" />
+                      <input type="hidden" name="enabled" value="on" />
+                      <button type="submit" class="enable">Enable</button>
+                    </form>
+                    <form method="get" action="/admin/middleware/toggle">
+                      <input type="hidden" name="name" value="<%= mw.name %>" />
+                      <input type="hidden" name="enabled" value="off" />
+                      <button type="submit" class="disable">Disable</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+        </div>
+      </main>
+    </div>
+    <div class="backdrop" data-backdrop></div>
+  </div>
+  <script>
+    (function(){
+      const sidebar = document.querySelector('.sidebar');
+      const btn = document.querySelector('[data-menu-btn]');
+      const backdrop = document.querySelector('[data-backdrop]');
+      function open(){ sidebar.classList.add('open'); backdrop.classList.add('show'); document.body.classList.add('no-scroll'); }
+      function close(){ sidebar.classList.remove('open'); backdrop.classList.remove('show'); document.body.classList.remove('no-scroll'); }
+      btn && btn.addEventListener('click', () => {
+        const isOpen = sidebar.classList.contains('open');
+        isOpen ? close() : open();
+      });
+      backdrop && backdrop.addEventListener('click', close);
+      window.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    })();
+  </script>
+</body>
+</html>

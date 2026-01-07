@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to {{appName}}!</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 1px solid #eaeaea;
+    }
+    .logo {
+      max-width: 180px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    .welcome-icon {
+      font-size: 48px;
+      color: #4CAF50;
+      margin: 20px 0;
+    }
+    .content {
+      padding: 30px 20px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background-color: #2196F3;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    .features {
+      margin: 30px 0;
+      padding: 0;
+    }
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .feature-icon {
+      color: #2196F3;
+      font-size: 24px;
+      margin-right: 15px;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .feature-text {
+      flex: 1;
+    }
+    .footer {
+      text-align: center;
+      padding: 30px 0 20px;
+      font-size: 13px;
+      color: #777;
+      border-top: 1px solid #eaeaea;
+    }
+    .social-links {
+      margin: 20px 0;
+    }
+    .social-link {
+      display: inline-block;
+      margin: 0 10px;
+      color: #555;
+      text-decoration: none;
+    }
+    .divider {
+      border-top: 1px solid #eaeaea;
+      margin: 30px 0;
+    }
+    .cta-section {
+      text-align: center;
+      margin: 40px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="welcome-icon">👋</div>
+      <h1>Welcome to {{appName}}, {{name}}!</h1>
+      <p>We're thrilled to have you on board</p>
+    </div>
+    
+    <div class="content">
+      <p>Hello {{name}},</p>
+      
+      <p>Thank you for joining {{appName}}! Your account is now active and ready to use. We're excited to help you [main value proposition of your app].</p>
+      
+      <div class="cta-section">
+        <a href="{{appUrl}}" class="button">Get Started</a>
+      </div>
+      
+      <div class="features">
+        <h3 style="margin-top: 0;">Here's what you can do now:</h3>
+        
+        <div class="feature">
+          <div class="feature-icon">🚌</div>
+          <div class="feature-text">
+            <h4 style="margin: 0 0 5px 0;">Book Your Next Trip</h4>
+            <p style="margin: 0;">Browse and book bus tickets to your favorite destinations with just a few clicks.</p>
+          </div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-text">
+            <h4 style="margin: 0 0 5px 0;">Track Your Bookings</h4>
+            <p style="margin: 0;">Easily manage and track all your bookings in one place.</p>
+          </div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🎫</div>
+          <div class="feature-text">
+            <h4 style="margin: 0 0 5px 0;">Get Exclusive Deals</h4>
+            <p style="margin: 0;">Enjoy special offers and discounts available only to our members.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <h3>Need Help Getting Started?</h3>
+      <p>Check out our <a href="{{helpCenterUrl}}" style="color: #2196F3; text-decoration: none;">Help Center</a> for guides and tutorials, or <a href="{{contactUrl}}" style="color: #2196F3; text-decoration: none;">contact our support team</a> if you have any questions.</p>
+      
+      <div class="cta-section">
+        <a href="{{appUrl}}/dashboard" class="button">Go to Your Dashboard</a>
+      </div>
+      
+      <p>We're here to make your travel experience seamless and enjoyable. If there's anything we can help you with, don't hesitate to reach out!</p>
+      
+      <p>Happy travels,<br>The {{appName}} Team</p>
+    </div>
+    
+    <div class="footer">
+      <div class="social-links">
+        <a href="{{facebookUrl}}" class="social-link" style="color: #3b5998;">Facebook</a>
+        <span>•</span>
+        <a href="{{twitterUrl}}" class="social-link" style="color: #1da1f2;">Twitter</a>
+        <span>•</span>
+        <a href="{{instagramUrl}}" class="social-link" style="color: #e1306c;">Instagram</a>
+      </div>
+      
+      <p>© {{currentYear}} {{appName}}. All rights reserved.</p>
+      <p>{{companyAddress}}</p>
+      
+      <p style="font-size: 12px; color: #999; margin-top: 20px;">
+        You're receiving this email because you created an account with {{appName}}.
+        <br>
+        <a href="{{unsubscribeUrl}}" style="color: #666; text-decoration: underline;">Unsubscribe</a> from these emails.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

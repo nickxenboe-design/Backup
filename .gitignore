@@ -1,0 +1,3 @@
+backend/chrome/
+node_modules/
+.env
