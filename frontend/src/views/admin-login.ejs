@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                200: '#bae6fd',
+                300: '#7dd3fc',
+                400: '#38bdf8',
+                500: '#0ea5e9',
+                600: '#0284c7',
+                700: '#0369a1',
+                800: '#075985',
+                900: '#0c4a6e',
+              }
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; color: #0f172a; background: #f8fafc; }
+    .muted { color: #64748b; font-size: 12px; }
+    .error { color: #ef4444; font-size: 13px; margin: 8px 0 0; min-height: 18px; }
+    </style>
+  </head>
+  <body>
+  <div class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+      <h1 class="text-2xl font-bold text-slate-900 mb-2">Admin Login</h1>
+      <div class="text-sm text-slate-600 mb-4">Sign in to access the admin dashboard.</div>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label for="email" class="text-sm text-slate-600">Email</label>
+          <input id="email" type="email" required class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+        </div>
+        <div>
+          <label for="password" class="text-sm text-slate-600">Password</label>
+          <input id="password" type="password" required class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+        </div>
+        <button id="submitBtn" type="submit" class="w-full inline-flex items-center justify-center rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500">Sign In</button>
+        <div id="error" class="text-sm text-red-600 mt-1 min-h-[18px]"></div>
+      </form>
+      <div class="mt-3 text-sm text-slate-500">
+        You will be redirected to your destination after login.
+      </div>
+      <div class="mt-2">
+        <a href="/admin/register" class="text-primary-600 hover:text-primary-700 text-sm font-medium">Admin registration</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Injected from server safely to avoid JS lint errors on EJS tags -->
+  <meta name="next-url" content="<%= next || '/admin-dashboard' %>">
+  <script id="firebase-config" type="application/json"><%- JSON.stringify(firebaseConfig || {}) %></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    (function(){
+      const NEXT_URL = document.querySelector('meta[name="next-url"]').getAttribute('content');
+      const FIREBASE_CONFIG = JSON.parse(document.getElementById('firebase-config').textContent || '{}');
+      const errorEl = document.getElementById('error');
+      // Basic runtime checks so we fail gracefully instead of breaking the whole script
+      if (!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) {
+        if (errorEl) {
+          errorEl.textContent = 'Admin login is not configured correctly. Missing Firebase config.';
+        }
+        console.error('Admin login: missing Firebase config', FIREBASE_CONFIG);
+        return;
+      }
+      if (typeof firebase === 'undefined') {
+        if (errorEl) {
+          errorEl.textContent = 'Admin login failed to load Firebase. Check your network and any ad blockers.';
+        }
+        console.error('Admin login: firebase global is not available');
+        return;
+      }
+      const app = firebase.initializeApp(FIREBASE_CONFIG);
+      const auth = firebase.auth();
+
+      const form = document.getElementById('loginForm');
+      const emailEl = document.getElementById('email');
+      const passwordEl = document.getElementById('password');
+      const submitBtn = document.getElementById('submitBtn');
+      // Enable the button once Firebase is initialized
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.textContent = '';
+        const email = emailEl.value.trim();
+        const password = passwordEl.value;
+        submitBtn.disabled = true;
+        const prevText = submitBtn.textContent;
+        submitBtn.textContent = 'Signing in...';
+        submitBtn.classList.add('opacity-50','cursor-not-allowed');
+        try {
+          // 1) Pre-check: ensure email is a registered, active admin
+          const pre = await fetch('/api/admins/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+          const preData = await pre.json();
+          if (!pre.ok || !preData.success || !preData.exists || !preData.active) {
+            throw new Error('This account is not registered as an admin. Contact an administrator for access.');
+          }
+
+          // 2) Proceed with Firebase sign-in only if registered
+          const cred = await auth.signInWithEmailAndPassword(email, password);
+          const idToken = await cred.user.getIdToken();
+          const res = await fetch('/api/auth/sessionLogin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ idToken })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.message || 'Failed to create session');
+          // Single confirmation call; no retries
+          const check = await fetch('/api/auth/me', { credentials: 'include' });
+          if (!check.ok) throw new Error('Failed to establish session');
+          window.location.href = NEXT_URL || '/admin';
+        } catch (err) {
+          errorEl.textContent = err.message || 'Login failed';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = prevText;
+          submitBtn.classList.remove('opacity-50','cursor-not-allowed');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

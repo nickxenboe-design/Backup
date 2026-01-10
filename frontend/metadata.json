@@ -1,0 +1,5 @@
+{
+  "name": "National Tickets Global",
+  "description": "A web application to find and book bus tickets globally, allowing users to select an origin, destination, date, and number of passengers for a bus trip.",
+  "requestFramePermissions": []
+}

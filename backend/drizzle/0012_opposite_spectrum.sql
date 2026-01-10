@@ -1,0 +1,1 @@
+ALTER TABLE "carts" ADD COLUMN "expires_at" timestamp with time zone DEFAULT now() + interval '1 hour';

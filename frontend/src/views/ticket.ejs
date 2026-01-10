@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Ticket - <%= ticket.ticket_no %></title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; font-size:14px; color:#111; padding:16px; width:520px; }
+    .header { display:flex; align-items:center; gap:12px; }
+    .logo { width:80px; }
+    h1 { margin:0; font-size:18px; }
+    .muted { color:#666; font-size:12px; }
+    .box { border:1px solid #ddd; padding:10px; margin-top:10px; border-radius:6px; }
+    .row { display:flex; justify-content:space-between; margin-bottom:6px; }
+    .big { font-weight:700; font-size:16px; }
+    .itinerary { display:flex; justify-content:space-between; gap:12px; }
+    .col { flex:1; }
+    .qr { text-align:center; margin-top:10px; }
+    .footer { margin-top:14px; font-size:12px; color:#444; }
+    .small { font-size:11px; color:#666; }
+    @media print { body { margin:0; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img class="logo" src="data:image/png;base64,<%= assets.logoBase64 %>" alt="logo" />
+    <div>
+      <h1>National Tickets Global</h1>
+      <div class="muted">Ticket No: <strong><%= ticket.ticket_no %></strong></div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="row">
+      <div>
+        <div class="small">Passenger</div>
+        <div class="big"><%= passenger.name %></div>
+        <div class="small">Phone: <%= passenger.phone %></div>
+      </div>
+      <div>
+        <div class="small">Ref No</div>
+        <div class="big"><%= ticket.ref_no %></div>
+        <div class="small">Booked By: <%= ticket.booked_by %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="itinerary">
+      <div class="col">
+        <div class="small">Depart</div>
+        <div class="big"><%= itinerary.depart_city %></div>
+        <div class="small"><%= itinerary.depart_date %> <%= itinerary.depart_time %></div>
+      </div>
+      <div class="col">
+        <div class="small">Arrive</div>
+        <div class="big"><%= itinerary.arrive_city %></div>
+        <div class="small"><%= itinerary.arrive_date %> <%= itinerary.arrive_time %></div>
+      </div>
+      <div class="col">
+        <div class="small">Seat</div>
+        <div class="big"><%= ticket.seat_no || '-' %></div>
+        <div class="small">Price: <strong><%= ticket.price %></strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="qr">
+    <img src="<%= qrDataUrl %>" alt="QR" width="120" />
+    <div class="small">Ticket UUID: <%= ticket.uuid %></div>
+  </div>
+
+  <div class="footer">
+    <div>TICKET CONFIRMED — Congratulations your ticket(s) have been booked.</div>
+    <div class="small">Checkin 1 Hour before Departure | Terms & Conditions Apply</div>
+    <div class="small">For Info Call <%= contact.phone %></div>
+  </div>
+</body>
+</html>
