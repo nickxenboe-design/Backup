@@ -1,0 +1,242 @@
+import React, { useState } from 'react';
+import { ResetIcon, DollarCircleIcon, SunriseIcon, FastForwardIcon, SunIcon, MoonIcon, CheckIcon, WifiIcon, PowerIcon, RestroomIcon, ArmchairIcon, ChevronDownIcon } from './icons';
+
+interface FilterSidebarProps {
+  sort: string;
+  onSortChange: (sort: string) => void;
+  timeFilters: string[];
+  onTimeFilterChange: (filters: string[]) => void;
+  operatorFilters: string[];
+  onOperatorFilterChange: (filters: string[]) => void;
+  amenityFilters: string[];
+  onAmenityFilterChange: (filters: string[]) => void;
+  availableOperators: string[];
+  availableAmenities: string[];
+}
+
+const iconProps = { className: "h-3 w-3" };
+
+const sortOptions = [
+  { value: 'earliest', label: 'Earliest Departure', icon: <SunriseIcon {...iconProps} /> },
+  { value: 'cheapest', label: 'Cheapest Price', icon: <DollarCircleIcon {...iconProps} /> },
+  { value: 'fastest', label: 'Fastest Trip', icon: <FastForwardIcon {...iconProps} /> },
+];
+
+const timeOptions = [
+  { value: 'morning', label: 'Morning (before 12pm)', icon: <SunIcon {...iconProps} /> },
+  { value: 'afternoon', label: 'Afternoon (12pm - 6pm)', icon: <SunIcon {...iconProps} style={{ transform: 'scale(1.1)'}} /> },
+  { value: 'evening', label: 'Evening (after 6pm)', icon: <MoonIcon {...iconProps} /> },
+];
+
+const getAmenityIcon = (amenity: string) => {
+  const amenityIconProps = { className: "h-3 w-3" };
+  switch (amenity.toLowerCase()) {
+    case 'wi-fi': return <WifiIcon {...amenityIconProps} />;
+    case 'charging port': return <PowerIcon {...amenityIconProps} />;
+    case 'toilet': return <RestroomIcon {...amenityIconProps} />;
+    case 'reclining seat': return <ArmchairIcon {...amenityIconProps} />;
+    default: return null;
+  }
+};
+
+const FilterSection: React.FC<{ title: string; isOpen: boolean; onToggle: () => void; rightSlot?: React.ReactNode; collapsible?: boolean; children: React.ReactNode }> = ({ title, isOpen, onToggle, rightSlot, collapsible = true, children }) => (
+  <div className="border-b border-gray-200 dark:border-gray-700 py-2 last:border-b-0">
+    {collapsible ? (
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between gap-2 text-left"
+        aria-expanded={isOpen}
+      >
+        <span className="font-bold text-xs text-[#652D8E] dark:text-purple-300">{title}</span>
+        <span className="flex items-center gap-2">
+          {rightSlot}
+          <ChevronDownIcon className={`h-3 w-3 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+    ) : (
+      <div className="w-full flex items-center justify-between gap-2 text-left">
+        <span className="font-bold text-xs text-[#652D8E] dark:text-purple-300">{title}</span>
+        <span className="flex items-center gap-2">
+          {rightSlot}
+        </span>
+      </div>
+    )}
+    {isOpen && (
+      <div className="mt-1.5">
+        {children}
+      </div>
+    )}
+  </div>
+);
+
+const FilterCard: React.FC<{ isSelected: boolean, onClick: () => void, children: React.ReactNode }> = ({ isSelected, onClick, children }) => {
+  const baseClasses = "p-1 w-fit rounded-lg border-2 cursor-pointer transition-all duration-200 flex items-center justify-start text-left relative focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-[#652D8E]";
+  const selectedClasses = "bg-[#652D8E] dark:bg-purple-600 text-white border-[#652D8E] dark:border-purple-600 shadow-lg shadow-[#652D8E]/20";
+  const unselectedClasses = "bg-white dark:bg-gray-700/50 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:border-[#652D8E]/60 dark:hover:border-purple-400/60 hover:bg-[#652D8E]/5 dark:hover:bg-purple-900/20";
+
+  return (
+    <button type="button" onClick={onClick} className={`${baseClasses} ${isSelected ? selectedClasses : unselectedClasses}`}>
+      {children}
+    </button>
+  );
+};
+
+const FilterSidebar: React.FC<FilterSidebarProps> = ({
+  sort,
+  onSortChange,
+  timeFilters,
+  onTimeFilterChange,
+  operatorFilters,
+  onOperatorFilterChange,
+  amenityFilters,
+  onAmenityFilterChange,
+  availableOperators,
+  availableAmenities,
+}) => {
+  const [openSections, setOpenSections] = useState({
+    sort: true,
+    time: true,
+    operators: true,
+    amenities: true,
+  });
+
+  const handleMultiSelectChange = (
+    currentFilters: string[],
+    setter: (newFilters: string[]) => void,
+    value: string
+  ) => {
+    const newFilters = currentFilters.includes(value)
+      ? currentFilters.filter(item => item !== value)
+      : [...currentFilters, value];
+    setter(newFilters);
+  };
+ 
+  const resetFilters = () => {
+    onSortChange('earliest');
+    onTimeFilterChange([]);
+    onOperatorFilterChange([]);
+    onAmenityFilterChange([]);
+  };
+
+  const anyFiltersApplied = timeFilters.length > 0 || operatorFilters.length > 0 || amenityFilters.length > 0 || sort !== 'earliest';
+
+  return (
+    <aside className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 sticky top-28 max-h-[calc(100vh-7rem)] overflow-y-auto">
+      <div className="flex justify-between items-center mb-1.5">
+        <h2 className="text-xs font-bold text-[#652D8E] dark:text-purple-300">Filters</h2>
+        {anyFiltersApplied && (
+          <button onClick={resetFilters} className="flex items-center gap-1 text-[10px] font-semibold text-[#652D8E] dark:text-purple-300 hover:opacity-75 transition-opacity">
+            <ResetIcon className="h-3 w-3"/>
+            Reset
+          </button>
+        )}
+      </div>
+
+      <FilterSection
+        title="Sort By"
+        isOpen={openSections.sort}
+        onToggle={() => setOpenSections((prev) => ({ ...prev, sort: !prev.sort }))}
+      >
+                <div className="grid grid-cols-1 gap-1.5">
+                    {sortOptions.map(option => (
+                        <FilterCard
+                            key={option.value}
+                            isSelected={sort === option.value}
+                            onClick={() => onSortChange(option.value)}
+                        >
+                            <div className="flex items-center gap-1 w-full px-1">
+                                {option.icon}
+                                <span className="font-semibold text-[10px]">{option.label}</span>
+                            </div>
+                        </FilterCard>
+                    ))}
+                </div>
+            </FilterSection>
+
+            <FilterSection
+                title="Departure Time"
+                isOpen={openSections.time}
+                onToggle={() => setOpenSections((prev) => ({ ...prev, time: !prev.time }))}
+                rightSlot={timeFilters.length > 0 ? (
+                    <span className="text-[10px] font-semibold text-gray-400">{timeFilters.length}</span>
+                ) : undefined}
+            >
+                <div className="grid grid-cols-1 gap-1">
+                    {timeOptions.map(option => (
+                        <FilterCard
+                            key={option.value}
+                            isSelected={timeFilters.includes(option.value)}
+                            onClick={() => handleMultiSelectChange(timeFilters, onTimeFilterChange, option.value)}
+                        >
+                            <div className="flex items-center gap-1 w-full px-1">
+                                {option.icon}
+                                <div className="text-left">
+                                    <span className="font-semibold text-[10px]">{option.label.split(' (')[0]}</span>
+                                    <span className="text-[9px] opacity-80 block">{`(${option.label.split(' (')[1]}`}</span>
+                                </div>
+                            </div>
+                             {timeFilters.includes(option.value) && <CheckIcon className="h-2 w-2 absolute top-1 right-1"/>}
+                        </FilterCard>
+                    ))}
+                </div>
+            </FilterSection>
+
+            {availableOperators.length > 0 && (
+                <FilterSection
+                    title="Bus Companies"
+                    isOpen
+                    onToggle={() => {}}
+                    collapsible={false}
+                    rightSlot={operatorFilters.length > 0 ? (
+                        <span className="text-[10px] font-semibold text-gray-400">{operatorFilters.length}</span>
+                    ) : undefined}
+                >
+                    <div className="grid grid-cols-1 gap-1">
+                        {availableOperators.map(operator => (
+                            <FilterCard
+                                key={operator}
+                                isSelected={operatorFilters.includes(operator)}
+                                onClick={() => handleMultiSelectChange(operatorFilters, onOperatorFilterChange, operator)}
+                            >
+                                <div className="flex items-center justify-between w-full px-1">
+                                    <span className="font-semibold text-[10px]">{operator}</span>
+                                    {operatorFilters.includes(operator) && <CheckIcon className="h-2 w-2" />}
+                                </div>
+                            </FilterCard>
+                        ))}
+                    </div>
+                </FilterSection>
+            )}
+
+            {availableAmenities.length > 0 && (
+                <FilterSection
+                    title="Amenities"
+                    isOpen={openSections.amenities}
+                    onToggle={() => setOpenSections((prev) => ({ ...prev, amenities: !prev.amenities }))}
+                    rightSlot={amenityFilters.length > 0 ? (
+                        <span className="text-[10px] font-semibold text-gray-400">{amenityFilters.length}</span>
+                    ) : undefined}
+                >
+                    <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto pr-1.5">
+                        {availableAmenities.map(amenity => (
+                             <FilterCard
+                                key={amenity}
+                                isSelected={amenityFilters.includes(amenity)}
+                                onClick={() => handleMultiSelectChange(amenityFilters, onAmenityFilterChange, amenity)}
+                            >
+                                <div className="flex flex-col items-center gap-0.5 py-0">
+                                    {getAmenityIcon(amenity)}
+                                    <span className="font-semibold text-[9px] capitalize">{amenity}</span>
+                                </div>
+                                {amenityFilters.includes(amenity) && <CheckIcon className="h-2 w-2 absolute top-1 right-1"/>}
+                            </FilterCard>
+                        ))}
+                    </div>
+                </FilterSection>
+            )}
+    </aside>
+  );
+};
+
+export default FilterSidebar;

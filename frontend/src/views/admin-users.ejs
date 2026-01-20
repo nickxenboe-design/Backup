@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; color: #0f172a; background: #f8fafc; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 22px; margin: 0 0 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; background: #fff; box-shadow: 0 10px 25px rgba(2,6,23,.06); }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .row { display: flex; align-items: center; gap: 12px; }
+    label { font-size: 12px; color: #475569; display: block; margin-bottom: 6px; }
+    input[type="email"], input[type="text"] { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; }
+    button { border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+    .primary { background: #2563eb; color: white; }
+    .muted { color: #64748b; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-size: 12px; letter-spacing: .02em; color: #475569; }
+    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-red { background: #fee2e2; color: #991b1b; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    a.link { color: #2563eb; text-decoration: none; font-weight: 600; }
+    .error { color: #dc2626; font-size: 13px; min-height: 18px; }
+    .success { color: #16a34a; font-size: 13px; min-height: 18px; }
+  </style>
+</head>
+<body>
+  <div class="wrap max-w-5xl mx-auto p-6">
+    <div class="topbar flex items-center justify-between mb-4">
+      <a href="/admin" class="link text-primary-600 hover:text-primary-700 font-semibold inline-flex items-center gap-2"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+      <div></div>
+    </div>
+
+    <h1>Admin Management</h1>
+
+    <div class="grid">
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:8px;">Add admin</div>
+        <div class="row" style="gap: 10px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label for="email">Admin email</label>
+            <input id="email" type="email" placeholder="admin@example.com" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+          </div>
+          <div>
+            <button id="addBtn" class="primary inline-flex items-center justify-center rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold px-4 py-2">Add</button>
+          </div>
+        </div>
+        <div id="addMsg" class="muted" style="margin-top:8px;"></div>
+        <div id="addErr" class="error"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-weight:700;">Admins</div>
+          <button id="refreshBtn" class="primary inline-flex items-center justify-center rounded-md bg-primary-600 hover:bg-primary-700 text-white font-semibold px-3 py-2">Refresh</button>
+        </div>
+        <div class="muted" style="margin-bottom:8px;">Admins can view and manage admins.</div>
+        <div style="overflow:auto;">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+              <tr>
+                <th class="px-4 py-2 text-left">Email</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-left">Id</th>
+              </tr>
+            </thead>
+            <tbody id="adminsBody" class="divide-y divide-slate-200">
+              <tr><td colspan="4" class="muted px-4 py-3">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const adminsBody = document.getElementById('adminsBody');
+      const addBtn = document.getElementById('addBtn');
+      const emailEl = document.getElementById('email');
+      const addMsg = document.getElementById('addMsg');
+      const addErr = document.getElementById('addErr');
+      const refreshBtn = document.getElementById('refreshBtn');
+
+      async function fetchAdmins(){
+        try {
+          refreshBtn.disabled = true;
+          const prev = refreshBtn.textContent; refreshBtn.textContent = 'Loading...'; refreshBtn.classList.add('opacity-50','cursor-not-allowed');
+          const res = await fetch('/api/admins', { credentials: 'include' });
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = '/admin';
+            return;
+          }
+          const data = await res.json();
+          const admins = (data && data.data) || [];
+          if (!Array.isArray(admins) || admins.length === 0) {
+            adminsBody.innerHTML = '<tr><td colspan="4" class="muted px-4 py-3">No admins yet</td></tr>';
+            return;
+          }
+          adminsBody.innerHTML = admins.map(a => `
+            <tr>
+              <td class="px-4 py-2">${a.email || ''}</td>
+              <td class="px-4 py-2">
+                <span class="tag ${a.active !== false ? 'tag-green' : 'tag-red'}">
+                  ${a.active !== false ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td class="px-4 py-2" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 12px;">${a.id || ''}</td>
+            </tr>
+          `).join('');
+        } catch (err) {
+          adminsBody.innerHTML = `<tr><td colspan="4" class="error px-4 py-3">Failed to load admins: ${err.message || err}</td></tr>`;
+        } finally {
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = 'Refresh';
+          refreshBtn.classList.remove('opacity-50','cursor-not-allowed');
+        }
+      }
+
+      async function addAdmin(){
+        addMsg.textContent = '';
+        addErr.textContent = '';
+        const email = (emailEl.value || '').trim();
+        if (!email) { addErr.textContent = 'Email is required'; return; }
+        try {
+          addBtn.disabled = true; const prev = addBtn.textContent; addBtn.textContent = 'Adding...'; addBtn.classList.add('opacity-50','cursor-not-allowed');
+          const res = await fetch('/api/admins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Failed to add admin');
+          addMsg.textContent = 'Admin added successfully';
+          emailEl.value = '';
+          fetchAdmins();
+        } catch (err) {
+          addErr.textContent = err.message || 'Failed to add admin';
+        } finally {
+          addBtn.disabled = false; addBtn.textContent = 'Add'; addBtn.classList.remove('opacity-50','cursor-not-allowed');
+        }
+      }
+
+      addBtn && addBtn.addEventListener('click', addAdmin);
+      refreshBtn && refreshBtn.addEventListener('click', fetchAdmins);
+      fetchAdmins();
+    })();
+  </script>
+</body>
+</html>
